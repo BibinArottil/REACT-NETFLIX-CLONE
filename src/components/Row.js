@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import axios from "../axios";
 import "./Row.css";
 import Youtube from "react-youtube";
-import movieTrailer from "movie-trailer";
 
 const base_url = "https://image.tmdb.org/t/p/original/";
 
@@ -14,7 +13,6 @@ const Row = ({ title, fetchUrl, isLargeRow }) => {
     async function fetchData() {
       const request = await axios.get(fetchUrl);
       setMovies(request.data.results);
-      console.log(request);
       return request;
     }
     fetchData();
@@ -24,22 +22,19 @@ const Row = ({ title, fetchUrl, isLargeRow }) => {
     height: "390",
     width: "100%",
     playerVars: {
-      autoplay: 1,
+      autoplay: 0,
     }
   }
-
-  const handleClick = async (movie) =>{
-    if(trailerUrl){
-      setTrailerUrl('')
-    }else{
-      movieTrailer(movie?.title || "")
-      .then((url) => {
-        const urlParams = URLSearchParams(new URL(url).search);
-        setTrailerUrl(urlParams.get("v"));
-        console.log(urlParams);
-      })
-      .catch((error) => console.log(error));
-    }
+ 
+  const handleClick = (id) =>{
+    console.log(id)
+    axios.get(`/movie/${id}/videos?api_key=30d24e41464e55f6896132ebd8545532&language=en-US`).then(response=>{
+      if(response.data.results.length!==0){
+        setTrailerUrl(response.data.results[0])
+      }else{
+        console.log('no trailer found')
+      }
+    })
   }
 
   return (
@@ -56,7 +51,7 @@ const Row = ({ title, fetchUrl, isLargeRow }) => {
           />
         ))}
       </div>
-      {trailerUrl && <Youtube videoId={trailerUrl} opts={opts} />}
+      {trailerUrl && <Youtube videoId={trailerUrl.key} opts={opts} />}
     </div>
   );
 };
